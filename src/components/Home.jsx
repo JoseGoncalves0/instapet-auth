@@ -81,16 +81,16 @@ export default function Home() {
           avatar: '🐾',
           image: `https://images.unsplash.com/photo-${1500000000000 + Math.random( ) * 100000000}?w=400&h=400&fit=crop`,
           likes: Math.floor(Math.random() * 200) + 10,
-          caption: 'Mais um post incrível dos nossos amigos peludos! 🐕🐱',
+          caption: 'HAHAHAHAHAHHAHA',
           timeAgo: `${Math.floor(Math.random() * 12) + 1}h`
         },
         {
           id: posts.length + 2,
-          username: `pet_fan_${posts.length + 2}`,
+          username: `teste_user${posts.length + 2}`,
           avatar: '🐈',
           image: `https://images.unsplash.com/photo-${1500000000000 + Math.random( ) * 100000000}?w=400&h=400&fit=crop`,
           likes: Math.floor(Math.random() * 150) + 5,
-          caption: 'Momentos especiais com nossos companheiros! ❤️',
+          caption: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATETS',
           timeAgo: `${Math.floor(Math.random() * 24) + 1}h`
         }
       ]
