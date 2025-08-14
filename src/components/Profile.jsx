@@ -6,7 +6,7 @@ import { useTheme } from '../contexts/ThemeContext.jsx'
 
 export default function ProfilePage() {
   const navigate = useNavigate()
-  const { theme, toggleTheme, isDark } = useTheme()
+  const { toggleTheme, isDark } = useTheme()
   const modalFileInputRef = useRef(null)
 
   // Estado do usuário (editável)

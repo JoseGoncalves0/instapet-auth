@@ -19,10 +19,10 @@ export default function Register() {
     password: ''
   })
   const [showPassword, setShowPassword] = useState(false)
-  const [acceptTerms, setAcceptTerms] = useState(false)
+  // Removido: const [acceptTerms, setAcceptTerms] = useState(false)
   const [error, setError] = useState('')
   const navigate = useNavigate()
-  const { theme, toggleTheme, isDark } = useTheme()
+  const { toggleTheme, isDark } = useTheme()
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -36,7 +36,7 @@ export default function Register() {
     e.preventDefault()
     setError('')
 
-    if (!acceptTerms) {
+    if (!agreeToTerms) {
       setError('Você deve aceitar os termos da Política de Privacidade')
       return
     }

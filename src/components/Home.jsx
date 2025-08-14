@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom' // ADICIONADO
 import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Search, PlusSquare, Film, User, Home as HomeIcon, Moon, Sun, Flag, EyeOff } from 'lucide-react'
 import logoImage from '../assets/logo.png'
@@ -9,11 +9,12 @@ export default function Home() {
   const [posts, setPosts] = useState([]) // Estado para gerenciar os posts
   const [loading, setLoading] = useState(false) // Estado para indicar carregamento
   const [openMenuId, setOpenMenuId] = useState(null) // Estado para controlar o menu de ações
-  const { theme, toggleTheme, isDark } = useTheme()
+  const { toggleTheme, isDark } = useTheme()
   const navigate = useNavigate() // ADICIONADO
 
   // Dados iniciais dos posts (adicionado mais posts para simular rolagem)
-  const initialPosts = [
+
+  const initialPosts = useMemo(() => [
     {
       id: 1,
       username: 'perfil_test',
@@ -59,15 +60,14 @@ export default function Home() {
       caption: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
       timeAgo: '10h'
     }
-  ]
-
+  ], []);
   // Carregar posts iniciais
-  useEffect(( ) => {
+  useEffect(() => {
     setPosts(initialPosts)
-  }, [])
+  }, [initialPosts])
 
   // Simular carregamento de mais posts
-  const loadMorePosts = () => {
+  const loadMorePosts = useCallback(() => {
     if (loading) return
     
     setLoading(true)
@@ -98,7 +98,7 @@ export default function Home() {
       setPosts(prev => [...prev, ...newPosts])
       setLoading(false)
     }, 1000)
-  }
+  }, [loading, posts.length])
 
   // Detectar rolagem para carregar mais posts
   useEffect(() => {
@@ -111,7 +111,7 @@ export default function Home() {
 
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [loading, posts.length])
+  }, [loading, posts.length, loadMorePosts])
 
   const toggleLike = (postId) => {
     setLikedPosts(prev => {
