@@ -1,11 +1,117 @@
-import { useState } from 'react'
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Search, PlusSquare, Film, User, Home as HomeIcon, Moon, Sun } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom' // ADICIONADO
+import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Search, PlusSquare, Film, User, Home as HomeIcon, Moon, Sun, Flag, EyeOff } from 'lucide-react'
 import logoImage from '../assets/logo.png'
 import { useTheme } from '../contexts/ThemeContext.jsx'
 
 export default function Home() {
   const [likedPosts, setLikedPosts] = useState(new Set())
+  const [posts, setPosts] = useState([]) // Estado para gerenciar os posts
+  const [loading, setLoading] = useState(false) // Estado para indicar carregamento
+  const [openMenuId, setOpenMenuId] = useState(null) // Estado para controlar o menu de ações
   const { theme, toggleTheme, isDark } = useTheme()
+  const navigate = useNavigate() // ADICIONADO
+
+  // Dados iniciais dos posts (adicionado mais posts para simular rolagem)
+  const initialPosts = [
+    {
+      id: 1,
+      username: 'perfil_test',
+      avatar: '👤',
+      image: 'https://images.unsplash.com/photo-1551717743-49959800b1f6?w=400&h=400&fit=crop',
+      likes: 42,
+      caption: 'test testetets',
+      timeAgo: '2h'
+    },
+    {
+      id: 2,
+      username: 'perfil_test2',
+      avatar: '🐕',
+      image: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=400&fit=crop',
+      likes: 128,
+      caption: 'Meu melhor amigo sempre ao mtestetstetstet',
+      timeAgo: '4h'
+    },
+    {
+      id: 3,
+      username: 'perfil_test3',
+      avatar: '🐱',
+      image: 'https://images.unsplash.com/photo-1574158622682-e40e69881006?w=400&h=400&fit=crop',
+      likes: 89,
+      caption: 'etstetstes teste',
+      timeAgo: '6h'
+    },
+    {
+      id: 4,
+      username: 'perfil_test4',
+      avatar: '🦮',
+      image: 'https://images.unsplash.com/photo-1552053831-71594a27632d?w=400&h=400&fit=crop',
+      likes: 203,
+      caption: 'tstestetstetstet etsteste',
+      timeAgo: '8h'
+    },
+    {
+      id: 5,
+      username: 'perfil_test5',
+      avatar: '🐰',
+      image: 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=400&h=400&fit=crop',
+      likes: 156,
+      caption: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+      timeAgo: '10h'
+    }
+  ]
+
+  // Carregar posts iniciais
+  useEffect(( ) => {
+    setPosts(initialPosts)
+  }, [])
+
+  // Simular carregamento de mais posts
+  const loadMorePosts = () => {
+    if (loading) return
+    
+    setLoading(true)
+    
+    // Simular delay de carregamento
+    setTimeout(() => {
+      const newPosts = [
+        {
+          id: posts.length + 1,
+          username: `user_${posts.length + 1}`,
+          avatar: '🐾',
+          image: `https://images.unsplash.com/photo-${1500000000000 + Math.random( ) * 100000000}?w=400&h=400&fit=crop`,
+          likes: Math.floor(Math.random() * 200) + 10,
+          caption: 'Mais um post incrível dos nossos amigos peludos! 🐕🐱',
+          timeAgo: `${Math.floor(Math.random() * 12) + 1}h`
+        },
+        {
+          id: posts.length + 2,
+          username: `pet_fan_${posts.length + 2}`,
+          avatar: '🐈',
+          image: `https://images.unsplash.com/photo-${1500000000000 + Math.random( ) * 100000000}?w=400&h=400&fit=crop`,
+          likes: Math.floor(Math.random() * 150) + 5,
+          caption: 'Momentos especiais com nossos companheiros! ❤️',
+          timeAgo: `${Math.floor(Math.random() * 24) + 1}h`
+        }
+      ]
+      
+      setPosts(prev => [...prev, ...newPosts])
+      setLoading(false)
+    }, 1000)
+  }
+
+  // Detectar rolagem para carregar mais posts
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.innerHeight + document.documentElement.scrollTop !== document.documentElement.offsetHeight || loading) {
+        return
+      }
+      loadMorePosts()
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [loading, posts.length])
 
   const toggleLike = (postId) => {
     setLikedPosts(prev => {
@@ -19,24 +125,38 @@ export default function Home() {
     })
   }
 
+  // Função para remover post
+  const removePost = (postId) => {
+    setPosts(prev => prev.filter(post => post.id !== postId))
+    setOpenMenuId(null) // Fecha o menu após a ação
+  }
+
+  // Função para abrir/fechar o menu de ações
+  const toggleMenu = (postId) => {
+    setOpenMenuId(openMenuId === postId ? null : postId)
+  }
+
+  // Fechar menu ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Verifica se o clique foi fora do menu e do botão que o abriu
+      if (openMenuId && !event.target.closest('.post-menu-container')) {
+        setOpenMenuId(null)
+      }
+    }
+
+    if (openMenuId) {
+      document.addEventListener('click', handleClickOutside)
+      return () => document.removeEventListener('click', handleClickOutside)
+    }
+  }, [openMenuId])
+
   const stories = [
     { id: 1, username: 'eu', avatar: '👤' },
     { id: 2, username: 'amigo 1', avatar: '👤' },
     { id: 3, username: 'amigo 2', avatar: '👤' },
     { id: 4, username: 'amigo 3', avatar: '👤' },
     { id: 5, username: 'amigo 4', avatar: '👤' }
-  ]
-
-  const posts = [
-    {
-      id: 1,
-      username: 'perfil_test',
-      avatar: '👤',
-      image: 'https://images.unsplash.com/photo-1551717743-49959800b1f6?w=400&h=400&fit=crop',
-      likes: 42,
-      caption: 'Muito adorável e Lindo seu animal de estimação <3',
-      timeAgo: '2h'
-    }
   ]
 
   const suggestions = [
@@ -72,7 +192,10 @@ export default function Home() {
           
           {/* Ícones de Navegação */}
           <div className="flex items-center space-x-4">
-            <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">
+            <button 
+              onClick={() => navigate('/home')} // NAVEGAÇÃO HOME (ADICIONADO)
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+            >
               <HomeIcon className="w-6 h-6 text-gray-900 dark:text-white" />
             </button>
             <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors relative">
@@ -92,7 +215,10 @@ export default function Home() {
                 <Moon className="w-6 h-6 text-gray-600" />
               )}
             </button>
-            <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">
+            <button 
+              onClick={() => navigate('/profile')} // NAVEGAÇÃO PERFIL (ADICIONADO)
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+            >
               <div className="w-6 h-6 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
                 <User className="w-4 h-4 text-gray-600 dark:text-gray-300" />
               </div>
@@ -136,7 +262,39 @@ export default function Home() {
                     </div>
                     <span className="font-semibold text-sm text-gray-900 dark:text-white">{post.username}</span>
                   </div>
-                  <MoreHorizontal className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  
+                  {/* Menu de Ações */}
+                  <div className="relative post-menu-container"> {/* Adicionado classe para clique fora */}
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation() // Impede que o clique propague para o documento
+                        toggleMenu(post.id)
+                      }}
+                      className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+                    >
+                      <MoreHorizontal className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                    </button>
+                    
+                    {/* Dropdown Menu */}
+                    {openMenuId === post.id && (
+                      <div className="absolute right-0 top-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-2 w-48 z-20">
+                        <button
+                          onClick={() => removePost(post.id)}
+                          className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center space-x-2"
+                        >
+                          <Flag className="w-4 h-4" />
+                          <span>Denunciar</span>
+                        </button>
+                        <button
+                          onClick={() => removePost(post.id)}
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center space-x-2"
+                        >
+                          <EyeOff className="w-4 h-4" />
+                          <span>Não recomendar</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Post Image */}
@@ -195,6 +353,13 @@ export default function Home() {
                 </div>
               </div>
             ))}
+            
+            {/* Loading Indicator */}
+            {loading && (
+              <div className="flex justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -249,4 +414,3 @@ export default function Home() {
     </div>
   )
 }
-

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { CheckCircle, XCircle } from 'lucide-react'
 
 export const useToast = () => {
   const [toasts, setToasts] = useState([])
@@ -47,50 +48,42 @@ const Toast = ({ toast, onRemove }) => {
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
-    // Animação de entrada
+    // animação de entrada
     setTimeout(() => setIsVisible(true), 10)
-  }, [])
 
-  const handleRemove = () => {
-    setIsVisible(false)
-    setTimeout(() => onRemove(toast.id), 300)
+    // fecha automaticamente após a duração do toast (ou 2000ms por padrão)
+    const duration = toast.duration ?? 2000
+    const timer = setTimeout(() => {
+      setIsVisible(false)
+      // chama onRemove após animação de saída
+      setTimeout(() => onRemove(toast.id), 300)
+    }, duration)
+
+    return () => clearTimeout(timer)
+  }, [toast, onRemove])
+
+  const typeStyles = {
+    success: 'bg-green-500',
+    error: 'bg-red-500',
+    info: 'bg-blue-500'
   }
 
-  const getToastStyles = () => {
-    const baseStyles = "px-4 py-3 rounded-lg shadow-lg text-white font-medium transition-all duration-300 transform cursor-pointer"
-    
-    const typeStyles = {
-      success: "bg-green-500",
-      error: "bg-red-500", 
-      info: "bg-blue-500"
-    }
+  const Icon = toast.type === 'success' ? CheckCircle : XCircle
 
-    const animationStyles = isVisible 
-      ? "translate-x-0 opacity-100 scale-100" 
-      : "translate-x-full opacity-0 scale-95"
-
-    return `${baseStyles} ${typeStyles[toast.type]} ${animationStyles}`
-  }
-
-  const getIcon = () => {
-    switch (toast.type) {
-      case 'success':
-        return '✓'
-      case 'error':
-        return '✗'
-      case 'info':
-      default:
-        return 'ℹ'
-    }
-  }
+  const animationStyles = isVisible
+    ? 'translate-x-0 opacity-100 scale-100'
+    : 'translate-x-full opacity-0 scale-95'
 
   return (
-    <div 
-      className={getToastStyles()}
-      onClick={handleRemove}
+    <div
+      className={`px-4 py-3 rounded-lg shadow-lg text-white font-medium transition-all duration-300 transform cursor-pointer ${typeStyles[toast.type || 'info']} ${animationStyles}`}
+      onClick={() => {
+        setIsVisible(false)
+        setTimeout(() => onRemove(toast.id), 300)
+      }}
     >
       <div className="flex items-center space-x-2">
-        <span className="text-lg">{getIcon()}</span>
+        <Icon className="w-5 h-5" />
         <span>{toast.message}</span>
       </div>
     </div>
@@ -98,4 +91,3 @@ const Toast = ({ toast, onRemove }) => {
 }
 
 export default ToastContainer
-

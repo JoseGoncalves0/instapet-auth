@@ -51,6 +51,14 @@ export default function Register() {
     navigate('/login')
   }
 
+  // Adicione estes estados extras para compatibilidade com o outro código
+  const [agreeToTerms, setAgreeToTerms] = useState(false)
+
+  // Adicione esta função para alternar a visualização da senha
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword)
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
       {/* Imagem de fundo com tema */}
@@ -152,7 +160,7 @@ export default function Register() {
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={togglePasswordVisibility}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400"
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -191,8 +199,8 @@ export default function Register() {
             <label className="flex items-start space-x-2 text-sm text-gray-600 dark:text-gray-400">
               <input
                 type="checkbox"
-                checked={acceptTerms}
-                onChange={(e) => setAcceptTerms(e.target.checked)}
+                checked={agreeToTerms}
+                onChange={(e) => setAgreeToTerms(e.target.checked)}
                 className="mt-1"
               />
               <span>
