@@ -1,18 +1,17 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom' // ADICIONADO
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Search, PlusSquare, Film, User, Home as HomeIcon, Moon, Sun, Flag, EyeOff } from 'lucide-react'
-import logoImage from '../assets/logo.png'
-import { useTheme } from '../contexts/ThemeContext.jsx'
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Search, PlusSquare, Film, User, Home as HomeIcon, Moon, Sun, Flag, EyeOff } from 'lucide-react';
+import logoImage from '../assets/logo.png';
+import { useTheme } from '../contexts/ThemeContext.jsx';
 
 export default function Home() {
-  const [likedPosts, setLikedPosts] = useState(new Set())
-  const [posts, setPosts] = useState([]) // Estado para gerenciar os posts
-  const [loading, setLoading] = useState(false) // Estado para indicar carregamento
-  const [openMenuId, setOpenMenuId] = useState(null) // Estado para controlar o menu de ações
-  const { toggleTheme, isDark } = useTheme()
-  const navigate = useNavigate() // ADICIONADO
-
-  // Dados iniciais dos posts (adicionado mais posts para simular rolagem)
+  const [unreadMessages, setUnreadMessages] = useState(1);
+  const [likedPosts, setLikedPosts] = useState(new Set());
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const { toggleTheme, isDark } = useTheme();
+  const navigate = useNavigate();
 
   const initialPosts = useMemo(() => [
     {
@@ -61,25 +60,25 @@ export default function Home() {
       timeAgo: '10h'
     }
   ], []);
-  // Carregar posts iniciais
-  useEffect(() => {
-    setPosts(initialPosts)
-  }, [initialPosts])
 
-  // Simular carregamento de mais posts
+  useEffect(() => {
+    setPosts(initialPosts);
+  }, [initialPosts]);
+
   const loadMorePosts = useCallback(() => {
-    if (loading) return
-    
-    setLoading(true)
-    
-    // Simular delay de carregamento
+    if (loading) return;
+
+    setLoading(true);
+
     setTimeout(() => {
       const newPosts = [
         {
           id: posts.length + 1,
           username: `user_${posts.length + 1}`,
           avatar: '🐾',
-          image: `https://images.unsplash.com/photo-${1500000000000 + Math.random( ) * 100000000}?w=400&h=400&fit=crop`,
+          // Gera uma imagem aleatória usando o serviço lorem picsum ou Unsplash com seed
+          image: `https://picsum.photos/400/400?random=${posts.length + 1}`,
+          // Ou: `https://source.unsplash.com/random/400x400?sig=${posts.length + 1}`,
           likes: Math.floor(Math.random() * 200) + 10,
           caption: 'HAHAHAHAHAHHAHA',
           timeAgo: `${Math.floor(Math.random() * 12) + 1}h`
@@ -88,87 +87,86 @@ export default function Home() {
           id: posts.length + 2,
           username: `teste_user${posts.length + 2}`,
           avatar: '🐈',
-          image: `https://images.unsplash.com/photo-${1500000000000 + Math.random( ) * 100000000}?w=400&h=400&fit=crop`,
+          // Gera outra imagem aleatória
+          image: `https://picsum.photos/400/400?random=${posts.length + 2}`,
+          // Ou: `https://source.unsplash.com/random/400x400?sig=${posts.length + 2}`,
           likes: Math.floor(Math.random() * 150) + 5,
           caption: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATETS',
           timeAgo: `${Math.floor(Math.random() * 24) + 1}h`
         }
-      ]
-      
-      setPosts(prev => [...prev, ...newPosts])
-      setLoading(false)
-    }, 1000)
-  }, [loading, posts.length])
+      ];
 
-  // Detectar rolagem para carregar mais posts
+      setPosts(prev => [...prev, ...newPosts]);
+      setLoading(false);
+    }, 1000);
+  }, [loading, posts.length]);
+
   useEffect(() => {
     const handleScroll = () => {
-      if (window.innerHeight + document.documentElement.scrollTop !== document.documentElement.offsetHeight || loading) {
-        return
+      // Verifica se o usuário chegou ao final da página e não está carregando
+      if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.offsetHeight - 100 && !loading) {
+        loadMorePosts();
       }
-      loadMorePosts()
-    }
+    };
 
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [loading, posts.length, loadMorePosts])
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [loading, loadMorePosts]); // Dependências corrigidas para evitar renderizações desnecessárias
 
   const toggleLike = (postId) => {
     setLikedPosts(prev => {
-      const newLikes = new Set(prev)
+      const newLikes = new Set(prev);
       if (newLikes.has(postId)) {
-        newLikes.delete(postId)
+        newLikes.delete(postId);
       } else {
-        newLikes.add(postId)
+        newLikes.add(postId);
       }
-      return newLikes
-    })
-  }
+      return newLikes;
+    });
+  };
 
-  // Função para remover post
   const removePost = (postId) => {
-    setPosts(prev => prev.filter(post => post.id !== postId))
-    setOpenMenuId(null) // Fecha o menu após a ação
-  }
+    setPosts(prev => prev.filter(post => post.id !== postId));
+    setOpenMenuId(null);
+  };
 
-  // Função para abrir/fechar o menu de ações
   const toggleMenu = (postId) => {
-    setOpenMenuId(openMenuId === postId ? null : postId)
-  }
+    setOpenMenuId(openMenuId === postId ? null : postId);
+  };
 
-  // Fechar menu ao clicar fora
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // Verifica se o clique foi fora do menu e do botão que o abriu
+      // Verifica se o clique foi fora de qualquer elemento com a classe 'post-menu-container'
       if (openMenuId && !event.target.closest('.post-menu-container')) {
-        setOpenMenuId(null)
+        setOpenMenuId(null);
       }
-    }
+    };
 
     if (openMenuId) {
-      document.addEventListener('click', handleClickOutside)
-      return () => document.removeEventListener('click', handleClickOutside)
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
     }
-  }, [openMenuId])
+  }, [openMenuId]);
 
-  const stories = [
+  const stories = useMemo(() => [
     { id: 1, username: 'eu', avatar: '👤' },
     { id: 2, username: 'amigo 1', avatar: '👤' },
     { id: 3, username: 'amigo 2', avatar: '👤' },
     { id: 4, username: 'amigo 3', avatar: '👤' },
     { id: 5, username: 'amigo 4', avatar: '👤' }
-  ]
+  ], []);
 
-  const suggestions = [
+  const suggestions = useMemo(() => [
     { id: 1, username: 'sugestao_1', name: 'Sugestão 1', avatar: '👤' },
     { id: 2, username: 'sugestao_2', name: 'Sugestão 2', avatar: '👤' },
     { id: 3, username: 'sugestao_3', name: 'Sugestão 3', avatar: '👤' },
     { id: 4, username: 'sugestao_4', name: 'Sugestão 4', avatar: '👤' },
     { id: 5, username: 'sugestao_5', name: 'Sugestão 5', avatar: '👤' }
-  ]
+  ], []);
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
+
       {/* Header */}
       <header className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-4 py-3 z-10 transition-colors duration-300">
         <div className="flex items-center justify-between max-w-6xl mx-auto">
@@ -177,7 +175,7 @@ export default function Home() {
             <img src={logoImage} alt="InstaPet" className="w-8 h-8" />
             <span className="text-xl font-bold text-gray-900 dark:text-white">InstaPet</span>
           </div>
-          
+
           {/* Barra de Pesquisa */}
           <div className="flex-1 max-w-md mx-8">
             <div className="relative">
@@ -189,25 +187,40 @@ export default function Home() {
               />
             </div>
           </div>
-          
+
           {/* Ícones de Navegação */}
           <div className="flex items-center space-x-4">
-            <button 
-              onClick={() => navigate('/home')} // NAVEGAÇÃO HOME (ADICIONADO)
+            <button
+              onClick={() => navigate('/home')}
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+              aria-label="Home"
             >
               <HomeIcon className="w-6 h-6 text-gray-900 dark:text-white" />
             </button>
-            <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors relative">
+
+            {/* Botão de Mensagens com contador dinâmico */}
+            <button
+              onClick={() => navigate("/messages")}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors relative"
+              aria-label="Mensagens"
+            >
               <MessageCircle className="w-6 h-6 text-gray-900 dark:text-white" />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">1</span>
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {unreadMessages}
+              </span>
             </button>
-            <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">
+
+            <button
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+              aria-label="Curtidas"
+            >
               <Heart className="w-6 h-6 text-gray-900 dark:text-white" />
             </button>
+
             <button
               onClick={toggleTheme}
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+              aria-label="Alternar tema"
             >
               {isDark ? (
                 <Sun className="w-6 h-6 text-yellow-500" />
@@ -215,9 +228,11 @@ export default function Home() {
                 <Moon className="w-6 h-6 text-gray-600" />
               )}
             </button>
-            <button 
-              onClick={() => navigate('/profile')} // NAVEGAÇÃO PERFIL (ADICIONADO)
+
+            <button
+              onClick={() => navigate('/profile')}
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+              aria-label="Perfil"
             >
               <div className="w-6 h-6 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
                 <User className="w-4 h-4 text-gray-600 dark:text-gray-300" />
@@ -227,18 +242,19 @@ export default function Home() {
         </div>
       </header>
 
+
       <div className="max-w-6xl mx-auto flex">
         {/* Feed Principal */}
         <div className="flex-1 max-w-2xl mx-auto">
           {/* Stories */}
           <div className="border-b border-gray-200 dark:border-gray-700 px-4 py-6">
-            <div className="flex space-x-4 overflow-x-auto">
+            <div className="flex space-x-4 overflow-x-auto scrollbar-hide"> {/* Adicione scrollbar-hide se tiver TailwindCSS Custom Forms */}
               {stories.map((story) => (
                 <div key={story.id} className="flex flex-col items-center space-y-1 min-w-0">
                   <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-yellow-400 to-pink-600 p-0.5">
                     <div className="w-full h-full rounded-full bg-white dark:bg-gray-900 p-0.5">
                       <div className="w-full h-full rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                        <span className="text-2xl">{story.avatar}</span>
+                        <span role="img" aria-label="Avatar da história" className="text-2xl">{story.avatar}</span>
                       </div>
                     </div>
                   </div>
@@ -258,35 +274,36 @@ export default function Home() {
                 <div className="flex items-center justify-between p-4">
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                      <span>{post.avatar}</span>
+                      <span role="img" aria-label="Avatar do post">{post.avatar}</span>
                     </div>
                     <span className="font-semibold text-sm text-gray-900 dark:text-white">{post.username}</span>
                   </div>
-                  
+
                   {/* Menu de Ações */}
-                  <div className="relative post-menu-container"> {/* Adicionado classe para clique fora */}
-                    <button 
+                  <div className="relative post-menu-container">
+                    <button
                       onClick={(e) => {
-                        e.stopPropagation() // Impede que o clique propague para o documento
-                        toggleMenu(post.id)
+                        e.stopPropagation();
+                        toggleMenu(post.id);
                       }}
                       className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+                      aria-label="Mais opções do post"
                     >
                       <MoreHorizontal className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                     </button>
-                    
+
                     {/* Dropdown Menu */}
                     {openMenuId === post.id && (
                       <div className="absolute right-0 top-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-2 w-48 z-20">
                         <button
-                          onClick={() => removePost(post.id)}
+                          onClick={() => removePost(post.id)} // Mantive removePost, mas para denunciar seria outra função
                           className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center space-x-2"
                         >
                           <Flag className="w-4 h-4" />
                           <span>Denunciar</span>
                         </button>
                         <button
-                          onClick={() => removePost(post.id)}
+                          onClick={() => removePost(post.id)} // Mantive removePost para "Não recomendar" também
                           className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center space-x-2"
                         >
                           <EyeOff className="w-4 h-4" />
@@ -299,9 +316,9 @@ export default function Home() {
 
                 {/* Post Image */}
                 <div className="aspect-square bg-gray-100 dark:bg-gray-800">
-                  <img 
-                    src={post.image} 
-                    alt="Post" 
+                  <img
+                    src={post.image}
+                    alt="Post"
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -310,15 +327,21 @@ export default function Home() {
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center space-x-4">
-                      <button onClick={() => toggleLike(post.id)}>
-                        <Heart 
+                      <button onClick={() => toggleLike(post.id)} aria-label="Curtir post">
+                        <Heart
                           className={`w-6 h-6 ${likedPosts.has(post.id) ? 'fill-red-500 text-red-500' : 'text-gray-900 dark:text-white'}`}
                         />
                       </button>
-                      <MessageCircle className="w-6 h-6 text-gray-900 dark:text-white" />
-                      <Send className="w-6 h-6 text-gray-900 dark:text-white" />
+                      <button aria-label="Comentar no post">
+                        <MessageCircle className="w-6 h-6 text-gray-900 dark:text-white" />
+                      </button>
+                      <button aria-label="Enviar post">
+                        <Send className="w-6 h-6 text-gray-900 dark:text-white" />
+                      </button>
                     </div>
-                    <Bookmark className="w-6 h-6 text-gray-900 dark:text-white" />
+                    <button aria-label="Salvar post">
+                      <Bookmark className="w-6 h-6 text-gray-900 dark:text-white" />
+                    </button>
                   </div>
 
                   {/* Likes */}
@@ -336,7 +359,7 @@ export default function Home() {
                   <div className="mt-2">
                     <div className="flex items-start space-x-2 text-sm">
                       <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
-                        <span className="text-xs">👤</span>
+                        <span role="img" aria-label="Avatar do comentarista" className="text-xs">👤</span>
                       </div>
                       <div className="text-gray-900 dark:text-white">
                         <span className="font-semibold">User1234_test</span>{' '}
@@ -353,7 +376,7 @@ export default function Home() {
                 </div>
               </div>
             ))}
-            
+
             {/* Loading Indicator */}
             {loading && (
               <div className="flex justify-center py-8">
@@ -383,13 +406,13 @@ export default function Home() {
                 <span className="text-sm font-semibold text-gray-500 dark:text-gray-400">Sugestões para você</span>
                 <button className="text-xs text-blue-500 dark:text-blue-400 font-semibold">Ver tudo</button>
               </div>
-              
+
               <div className="space-y-3">
                 {suggestions.map((suggestion) => (
                   <div key={suggestion.id} className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                        <span className="text-sm">{suggestion.avatar}</span>
+                        <span role="img" aria-label="Avatar da sugestão" className="text-sm">{suggestion.avatar}</span>
                       </div>
                       <div>
                         <div className="text-sm font-semibold text-gray-900 dark:text-white">{suggestion.username}</div>
@@ -412,5 +435,5 @@ export default function Home() {
         </div>
       </div>
     </div>
-  )
+  );
 }

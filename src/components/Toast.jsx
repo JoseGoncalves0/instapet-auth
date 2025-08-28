@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { CheckCircle, XCircle } from 'lucide-react'
+import { useState, useEffect, useCallback } from "react"
+import { CheckCircle, XCircle } from "lucide-react"
 
 export const ToastContainer = ({ toasts, removeToast }) => {
   if (!toasts || toasts.length === 0) return null
@@ -17,14 +17,11 @@ const Toast = ({ toast, onRemove }) => {
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
-    // animação de entrada
     setTimeout(() => setIsVisible(true), 10)
 
-    // fecha automaticamente após a duração do toast (ou 2000ms por padrão)
     const duration = toast.duration ?? 2000
     const timer = setTimeout(() => {
       setIsVisible(false)
-      // chama onRemove após animação de saída
       setTimeout(() => onRemove(toast.id), 300)
     }, duration)
 
@@ -32,20 +29,20 @@ const Toast = ({ toast, onRemove }) => {
   }, [toast, onRemove])
 
   const typeStyles = {
-    success: 'bg-green-500',
-    error: 'bg-red-500',
-    info: 'bg-blue-500'
+    success: "bg-green-500",
+    error: "bg-red-500",
+    info: "bg-blue-500",
   }
 
-  const Icon = toast.type === 'success' ? CheckCircle : XCircle
+  const Icon = toast.type === "success" ? CheckCircle : XCircle
 
   const animationStyles = isVisible
-    ? 'translate-x-0 opacity-100 scale-100'
-    : 'translate-x-full opacity-0 scale-95'
+    ? "translate-x-0 opacity-100 scale-100"
+    : "translate-x-full opacity-0 scale-95"
 
   return (
     <div
-      className={`px-4 py-3 rounded-lg shadow-lg text-white font-medium transition-all duration-300 transform cursor-pointer ${typeStyles[toast.type || 'info']} ${animationStyles}`}
+      className={`px-4 py-3 rounded-lg shadow-lg text-white font-medium transition-all duration-300 transform cursor-pointer ${typeStyles[toast.type || "info"]} ${animationStyles}`}
       onClick={() => {
         setIsVisible(false)
         setTimeout(() => onRemove(toast.id), 300)
@@ -59,4 +56,26 @@ const Toast = ({ toast, onRemove }) => {
   )
 }
 
-export default ToastContainer
+// 🔥 Hook com funções showSuccess / showError
+export function useToast() {
+  const [toasts, setToasts] = useState([])
+
+  const addToast = useCallback((message, type = "info", duration = 2000) => {
+    const id = Date.now()
+    setToasts((prev) => [...prev, { id, message, type, duration }])
+  }, [])
+
+  const removeToast = useCallback((id) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id))
+  }, [])
+
+  const showSuccess = (message, duration = 2000) => {
+    addToast(message, "success", duration)
+  }
+
+  const showError = (message, duration = 2000) => {
+    addToast(message, "error", duration)
+  }
+
+  return { toasts, showSuccess, showError, removeToast }
+}
